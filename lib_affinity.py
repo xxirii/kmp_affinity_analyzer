@@ -89,7 +89,6 @@ class Affinity:
     for i in range(len(info_list)):
       infos = info_list[i].split(' ')
       procnum = int(infos[2])
-      print(infos)
       ip = int(infos[6])
       ic = int(infos[8])
       if (len(infos)>9): 
@@ -117,6 +116,8 @@ class Affinity:
     """
     Get how logical threads are bound to physical threads
     """
+
+    # 242 does not contain tid
     if '242' in self.info_dict:
       info_list = self.info_dict['242']
       for i in range(len(info_list)):
@@ -155,6 +156,7 @@ class Affinity:
               ic = self.package_list[ip].proctocore_list[k]
               it = self.package_list[ip].proctothread_list[k]
               self.package_list[ip].core_list[ic].thread_list[it].lthread_pid = pid
+              self.package_list[ip].core_list[ic].thread_list[it].lthread_tid = tid
               self.package_list[ip].core_list[ic].thread_list[it].lthread_id = lthread_id
             ip+=1
  
@@ -174,8 +176,9 @@ class Affinity:
         for it in range(self.package_list[ip].core_list[ic].nthreads):
           pthread_id = self.package_list[ip].core_list[ic].thread_list[it].pthread_id
           lthread_pid = self.package_list[ip].core_list[ic].thread_list[it].lthread_pid
+          lthread_tid = self.package_list[ip].core_list[ic].thread_list[it].lthread_tid
           lthread_id = self.package_list[ip].core_list[ic].thread_list[it].lthread_id
-          print(' ' + indent2 + ' - Thread %d'%it + ' - proc #%d - pid %d - logical thread #%d'%(pthread_id,lthread_pid,lthread_id))
+          print(' ' + indent2 + ' - Thread %d'%it + ' - proc #%d - pid %d - tid %d - logical thread #%d'%(pthread_id,lthread_pid,lthread_tid,lthread_id))
       print('')  
   
   def output_in_file(self,output_filename):   
@@ -199,8 +202,9 @@ class Affinity:
         for it in range(self.package_list[ip].core_list[ic].nthreads):
           pthread_id = self.package_list[ip].core_list[ic].thread_list[it].pthread_id
           lthread_pid = self.package_list[ip].core_list[ic].thread_list[it].lthread_pid
+          lthread_tid = self.package_list[ip].core_list[ic].thread_list[it].lthread_tid
           lthread_id = self.package_list[ip].core_list[ic].thread_list[it].lthread_id
-          output_file.write(' ' + indent2 + ' - Thread %d'%it + ' - proc #%d - pid %d - logical thread #%d \n'%(pthread_id,lthread_pid,lthread_id))
+          output_file.write(' ' + indent2 + ' - Thread %d'%it + ' - proc #%d - pid %d - tid %d - logical thread #%d \n'%(pthread_id,lthread_pid,lthread_tid,lthread_id))
     output_file.close()
     
   def read_file(self,filename):
@@ -307,8 +311,9 @@ class Core:
 # Class Thread
 
 class Thread:
-  def __init__(self,pthread_id=0,lthread_pid=0,lthread_id=0):
+  def __init__(self,pthread_id=0,lthread_pid=0,lthread_tid=0,lthread_id=0):
     self.pthread_id = pthread_id      # physical thread id
     self.lthread_pid = lthread_pid    # pid associated to the thread
+    self.lthread_tid = lthread_tid    # tid associated to the thread
     self.lthread_id = lthread_id      # logical thread id
     
